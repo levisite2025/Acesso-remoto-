@@ -1,9 +1,9 @@
 {
-  "name": "OmniRemote - Sistema de Suporte",
-  "description": "Uma plataforma de suporte remoto de alto desempenho com compartilhamento de tela em tempo real, diagnósticos por IA e gerenciamento de conexões seguras.",
   "requestFramePermissions": [
     "camera",
     "microphone",
     "display-capture"
-  ]
+  ],
+  "name": "",
+  "description": ""
 }

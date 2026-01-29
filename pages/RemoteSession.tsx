@@ -1,152 +1,196 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  X, 
-  Camera, 
-  Share2,
-  Lock,
-  Monitor,
-  MousePointer2,
-  Keyboard,
-  MessageSquare,
-  Activity,
-  Wifi
+  X, Camera, MousePointer2, Keyboard, MessageSquare, Wifi, Square, 
+  AlertTriangle, ShieldCheck, Files, Settings2, Mic, MicOff, Maximize2 
 } from 'lucide-react';
-import ChatBox from '../components/ChatBox.tsx';
 
 const RemoteSession: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [isControlEnabled, setIsControlEnabled] = useState(false);
-  const [showChat, setShowChat] = useState(false);
+  const [active, setActive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [latency, setLatency] = useState(15);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLatency(prev => Math.max(8, Math.min(60, prev + (Math.random() * 6 - 3))));
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const startScreenShare = async () => {
+  const startSession = async () => {
     try {
+      setError(null);
+      // Solicita o compartilhamento de tela nativo (Simulando a "Extensão")
       const stream = await navigator.mediaDevices.getDisplayMedia({ 
         video: { cursor: "always" } as any,
-        audio: false
+        audio: true 
       });
+      
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsScreenSharing(true);
+        setActive(true);
       }
-    } catch (err) {
-      console.error("Erro ao compartilhar:", err);
+
+      // Se o usuário parar de compartilhar pelo navegador
+      stream.getVideoTracks()[0].onended = () => {
+        endSession();
+      };
+    } catch (err: any) {
+      console.error(err);
+      setError("Acesso negado. Certifique-se de permitir o compartilhamento de tela nas configurações do navegador.");
     }
   };
 
-  const stopScreenShare = () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
-    stream?.getTracks().forEach(track => track.stop());
-    setIsScreenSharing(false);
+  const endSession = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+    }
+    setActive(false);
     navigate('/');
   };
 
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+      }
+    };
+  }, []);
+
+  const Tooltip = ({ text }: { text: string }) => (
+    <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-slate-900/90 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none border border-slate-800 backdrop-blur-md shadow-2xl whitespace-nowrap scale-90 group-hover:scale-100">
+      {text}
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-b border-r border-slate-800 rotate-45"></div>
+    </div>
+  );
+
   return (
-    <div className="h-full w-full flex flex-col gap-4 animate-in slide-in-from-bottom-8 duration-700 relative">
-      
-      {/* Container Principal da Tela */}
-      <div className="flex-1 bg-black rounded-[40px] border border-slate-900 relative overflow-hidden shadow-2xl group flex items-center justify-center">
-        
-        {!isScreenSharing ? (
-          <div className="flex flex-col items-center justify-center text-center p-12">
-            <div className="w-32 h-32 bg-slate-900 rounded-[48px] flex items-center justify-center mb-8 shadow-2xl border border-slate-800 group-hover:scale-105 transition-transform duration-500">
-              <Share2 className="text-blue-500" size={56} />
+    <div className="h-full w-full bg-slate-950 flex flex-col">
+      {!active ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+          <div className="w-24 h-24 bg-red-600 rounded-[32px] flex items-center justify-center mb-8 shadow-2xl shadow-red-600/30">
+            <Wifi className="text-white" size={40} />
+          </div>
+          
+          <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Sessão Remota: {id}</h2>
+          <p className="text-slate-500 mb-12 max-w-sm text-lg">
+            O técnico está aguardando permissão. Ao clicar abaixo, o navegador solicitará qual tela você deseja compartilhar.
+          </p>
+
+          {error && (
+            <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400 text-sm max-w-md animate-in fade-in zoom-in">
+              <AlertTriangle size={20} className="shrink-0" />
+              <p className="font-medium">{error}</p>
             </div>
-            <h3 className="text-4xl font-black text-white mb-4 tracking-tight">Pronto para Conectar</h3>
-            <p className="text-slate-500 max-w-sm mb-12 text-lg leading-relaxed">
-              Você está acessando a máquina <span className="text-white font-mono">{id}</span>. 
-              Clique abaixo para iniciar o espelhamento.
-            </p>
+          )}
+
+          <div className="flex flex-col gap-4 w-full max-w-xs">
             <button 
-              onClick={startScreenShare}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-12 py-6 rounded-3xl font-black text-xl flex items-center gap-4 transition-all shadow-2xl shadow-blue-600/30 active:scale-95"
+              onClick={startSession}
+              className="bg-red-600 text-white px-10 py-5 rounded-2xl font-black text-xl hover:bg-red-500 transition-all shadow-xl shadow-red-600/20 active:scale-95"
             >
-              <Camera size={24} />
-              Iniciar Visualização
+              Iniciar Transmissão
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="bg-slate-900 text-slate-400 px-10 py-4 rounded-2xl font-bold hover:text-white transition-all"
+            >
+              Voltar ao Início
             </button>
           </div>
-        ) : (
-          <div className="w-full h-full relative flex items-center justify-center">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              className={`w-full h-full object-contain ${isControlEnabled ? 'cursor-none' : 'cursor-default'}`}
-            />
-            
-            {/* Overlay de Controle */}
-            {isControlEnabled && (
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-blue-600 text-[10px] px-4 py-1.5 rounded-full font-black text-white tracking-widest shadow-2xl animate-pulse z-30">
-                CONTROLE REMOTO ATIVO
-              </div>
-            )}
+          
+          <div className="mt-16 flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-widest">
+            <ShieldCheck size={14} />
+            Suporte OmniRemote Seguro v2.4
           </div>
-        )}
+        </div>
+      ) : (
+        <div className="relative flex-1 bg-black overflow-hidden flex items-center justify-center">
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            className="w-full h-full object-contain"
+          />
+          
+          {/* Top Info Bar */}
+          <div className="absolute top-6 left-6 flex items-center gap-4">
+            <div className="bg-red-600/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-3 border border-red-500 shadow-2xl">
+              <div className="w-2 h-2 rounded-full bg-white status-pulse"></div>
+              <span className="text-[11px] font-black text-white uppercase tracking-widest">AO VIVO • {id}</span>
+            </div>
+            
+            <div className="bg-slate-900/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-800 text-slate-400 flex items-center gap-4">
+              <div className="flex items-center gap-2 text-[10px] font-bold">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                QUALIDADE: HD
+              </div>
+              <div className="w-px h-3 bg-slate-800"></div>
+              <div className="flex items-center gap-2 text-[10px] font-bold">
+                FPS: 60
+              </div>
+            </div>
+          </div>
 
-        {/* Toolbar Flutuante */}
-        {isScreenSharing && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-40">
-            <div className="bg-slate-950/80 backdrop-blur-2xl border border-slate-800 px-8 py-4 rounded-[32px] flex items-center gap-8 shadow-2xl">
+          {/* Floating Action Toolbar */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-fit">
+            <div className="bg-slate-950/80 backdrop-blur-2xl border border-white/5 px-6 py-3 rounded-3xl flex items-center gap-4 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)]">
               
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 mr-4">
-                <Wifi size={14} />
-                {latency.toFixed(0)}ms
+              <div className="flex items-center gap-1">
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Sincronizar Mouse" />
+                  <MousePointer2 size={22} />
+                </button>
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Habilitar Teclado" />
+                  <Keyboard size={22} />
+                </button>
               </div>
 
+              <div className="w-px h-8 bg-white/10 mx-1"></div>
+
+              <div className="flex items-center gap-1">
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Arquivos" />
+                  <Files size={22} />
+                </button>
+                <button 
+                  onClick={() => setIsMuted(!isMuted)}
+                  className={`relative group p-3 rounded-2xl transition-all ${isMuted ? 'text-red-400 bg-red-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Tooltip text={isMuted ? "Ativar Áudio" : "Mutar Áudio"} />
+                  {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
+                </button>
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Chat de Suporte" />
+                  <MessageSquare size={22} />
+                </button>
+              </div>
+
+              <div className="w-px h-8 bg-white/10 mx-1"></div>
+
+              <div className="flex items-center gap-1">
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Configurações" />
+                  <Settings2 size={22} />
+                </button>
+                <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                  <Tooltip text="Tela Cheia" />
+                  <Maximize2 size={22} />
+                </button>
+              </div>
+
+              <div className="w-px h-8 bg-white/10 mx-1"></div>
+              
               <button 
-                onClick={() => setIsControlEnabled(!isControlEnabled)}
-                className={`flex flex-col items-center gap-1.5 transition-all ${isControlEnabled ? 'text-blue-500' : 'text-slate-500 hover:text-white'}`}
+                onClick={endSession}
+                className="relative group bg-red-600 hover:bg-red-500 text-white p-3.5 rounded-2xl shadow-lg transition-all active:scale-90 ml-1"
               >
-                <MousePointer2 size={20} />
-                <span className="text-[9px] uppercase font-black tracking-widest">Controle</span>
-              </button>
-
-              <button className="text-slate-500 hover:text-white flex flex-col items-center gap-1.5 transition-all">
-                <Keyboard size={20} />
-                <span className="text-[9px] uppercase font-black tracking-widest">Teclado</span>
-              </button>
-
-              <button 
-                onClick={() => setShowChat(!showChat)}
-                className={`flex flex-col items-center gap-1.5 transition-all ${showChat ? 'text-blue-500' : 'text-slate-500 hover:text-white'}`}
-              >
-                <MessageSquare size={20} />
-                <span className="text-[9px] uppercase font-black tracking-widest">Chat</span>
-              </button>
-
-              <div className="h-8 w-[1px] bg-slate-800"></div>
-
-              <button 
-                onClick={stopScreenShare}
-                className="text-red-500 hover:text-red-400 flex flex-col items-center gap-1.5 transition-all"
-              >
-                <X size={20} />
-                <span className="text-[9px] uppercase font-black tracking-widest">Encerrar</span>
+                <Tooltip text="Encerrar Sessão" />
+                <Square size={20} fill="currentColor" />
               </button>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Chat Flutuante */}
-      {showChat && (
-        <div className="absolute right-12 bottom-32 w-80 h-96 z-50 animate-in slide-in-from-right-8 duration-300">
-          <ChatBox />
         </div>
       )}
-
     </div>
   );
 };

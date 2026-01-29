@@ -1,16 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OmniRemote | Suporte Simplificado</title>
+    <title>OmniRemote | Acesso Remoto Web</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <script>
+      window.process = { env: { NODE_ENV: 'production' } };
+    </script>
     <style>
       body {
         font-family: 'Inter', sans-serif;
-        background-color: #020617; /* Slate-950 */
+        background-color: #020617;
         color: #f8fafc;
         margin: 0;
         padding: 0;
@@ -18,23 +20,40 @@
         width: 100vw;
         overflow: hidden;
       }
-      #root {
-        height: 100%;
-        width: 100%;
+      #root { height: 100%; width: 100%; }
+      .font-mono { font-family: 'JetBrains Mono', monospace; }
+      
+      .status-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
-      .font-mono {
-        font-family: 'JetBrains Mono', monospace;
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
       }
     </style>
     <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "react-router-dom": "https://esm.sh/react-router-dom@7.1.3",
-    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
-    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.26.0?external=react,react-dom",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react,react-dom",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/"
   }
@@ -42,12 +61,7 @@
 </script>
   </head>
   <body>
-    <div id="root">
-      <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-family: sans-serif; color: #475569;">
-        Carregando OmniRemote...
-      </div>
-    </div>
-    <!-- O erro principal era a falta desta linha abaixo -->
+    <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>
