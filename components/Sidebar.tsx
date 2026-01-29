@@ -1,0 +1,1 @@
+// Arquivo mantido vazio ou removido logicamente via App.tsx
