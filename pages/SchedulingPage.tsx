@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Clock, User, Mail, MessageSquare, CheckCircle, ChevronRight, AlertCircle } from 'lucide-react';
 

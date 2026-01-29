@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Download, Shield, Key, ArrowRight, Monitor, Laptop, Server } from 'lucide-react';
+import { Download, Shield, Monitor, Laptop, Server } from 'lucide-react';
 
 const ClientPortal: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -13,34 +12,39 @@ const ClientPortal: React.FC = () => {
     setStep(3);
   };
 
+  const platforms = [
+    { Icon: Monitor, title: 'Windows', desc: 'v2.4.1 Build 2024' },
+    { Icon: Laptop, title: 'macOS', desc: 'Binário Universal' },
+    { Icon: Server, title: 'Linux', desc: 'AppImage / Deb' },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-700 p-6 overflow-y-auto h-full">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-extrabold text-white tracking-tight">Receber Suporte</h1>
         <p className="text-slate-400 text-lg">Baixe o assistente seguro do OmniRemote para permitir que um especialista ajude você.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-        {[
-          { icon: <Monitor />, title: 'Windows', desc: 'v2.4.1 Build 2024' },
-          { icon: <Laptop />, title: 'macOS', desc: 'Binário Universal' },
-          { icon: <Server />, title: 'Linux', desc: 'AppImage / Deb' },
-        ].map((platform, i) => (
-          <div key={i} className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center hover:border-blue-500 transition-all group cursor-pointer">
-            <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-400 group-hover:text-blue-400 group-hover:bg-blue-600/10 transition-all">
-              {React.cloneElement(platform.icon as React.ReactElement, { size: 32 })}
+        {platforms.map((platform, i) => {
+          const { Icon } = platform;
+          return (
+            <div key={i} className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center hover:border-blue-500 transition-all group cursor-pointer">
+              <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-400 group-hover:text-blue-400 group-hover:bg-blue-600/10 transition-all">
+                <Icon size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{platform.title}</h3>
+              <p className="text-slate-500 text-sm mb-6">{platform.desc}</p>
+              <button 
+                onClick={() => setStep(2)}
+                className="w-full py-3 bg-slate-800 group-hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+              >
+                <Download size={18} />
+                Baixar
+              </button>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">{platform.title}</h3>
-            <p className="text-slate-500 text-sm mb-6">{platform.desc}</p>
-            <button 
-              onClick={() => setStep(2)}
-              className="w-full py-3 bg-slate-800 group-hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
-            >
-              <Download size={18} />
-              Baixar
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="bg-slate-900 border border-slate-800 p-12 rounded-[40px] mt-12 relative overflow-hidden shadow-2xl">
