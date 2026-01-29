@@ -26,95 +26,85 @@ const Dashboard: React.FC = () => {
 
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
-    if (remoteId.length >= 6) {
-      navigate(`/session/${remoteId}`);
+    const cleanId = remoteId.replace(/[^0-9]/g, '');
+    if (cleanId.length >= 6) {
+      navigate(`/session/${cleanId}`);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto h-full flex flex-col justify-center gap-12 animate-in fade-in duration-700">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="w-full h-full flex flex-col items-center justify-center p-6 animate-in fade-in duration-700">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        {/* Card: Este Computador */}
-        <div className="bg-slate-900 border border-slate-800 rounded-[40px] p-10 flex flex-col shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-            <Monitor size={160} />
-          </div>
-          
-          <div className="mb-8">
-            <div className="w-14 h-14 bg-blue-600/10 text-blue-500 rounded-2xl flex items-center justify-center mb-6">
-              <Monitor size={28} />
+        {/* Card: Este Computador (AnyDesk style) */}
+        <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-8 flex flex-col shadow-2xl hover:border-blue-500/30 transition-all group">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 bg-blue-600/10 text-blue-500 rounded-2xl">
+              <Monitor size={24} />
             </div>
-            <h2 className="text-2xl font-bold text-white">Este Computador</h2>
-            <p className="text-slate-400 mt-2">Compartilhe este código para receber suporte.</p>
+            <div>
+              <h2 className="text-xl font-bold text-white">Este Computador</h2>
+              <p className="text-xs text-slate-500">ID para receber suporte</p>
+            </div>
           </div>
 
-          <div className="mt-auto space-y-4">
-            <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">
-              <span className="text-3xl font-mono font-black text-white tracking-widest">{myId}</span>
+          <div className="mt-auto">
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-center justify-between group-hover:bg-slate-900 transition-colors">
+              <span className="text-2xl font-mono font-black text-white tracking-widest">{myId}</span>
               <button 
                 onClick={handleCopy}
-                className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                className={`p-2.5 rounded-xl transition-all ${copied ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}`}
               >
-                {copied ? <Check size={20} /> : <Copy size={20} />}
+                {copied ? <Check size={20} /> : <Copy size={18} />}
               </button>
             </div>
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-[0.2em] text-center">Código de Acesso Seguro</p>
           </div>
         </div>
 
-        {/* Card: Conexão Remota */}
-        <div className="bg-slate-900 border border-slate-800 rounded-[40px] p-10 flex flex-col shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-            <RefreshCw size={160} />
+        {/* Card: Controle Remoto */}
+        <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-8 flex flex-col shadow-2xl hover:border-purple-500/30 transition-all group">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 bg-purple-600/10 text-purple-500 rounded-2xl">
+              <RefreshCw size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Controle Remoto</h2>
+              <p className="text-xs text-slate-500">Acessar outro computador</p>
+            </div>
           </div>
 
-          <div className="mb-8">
-            <div className="w-14 h-14 bg-purple-600/10 text-purple-500 rounded-2xl flex items-center justify-center mb-6">
-              <RefreshCw size={28} />
-            </div>
-            <h2 className="text-2xl font-bold text-white">Conectar Remoto</h2>
-            <p className="text-slate-400 mt-2">Insira o código do computador que deseja acessar.</p>
-          </div>
-
-          <form onSubmit={handleConnect} className="mt-auto space-y-6">
-            <div className="relative">
-              <input 
-                type="text" 
-                value={remoteId}
-                onChange={(e) => setRemoteId(e.target.value)}
-                placeholder="ID de 9 dígitos"
-                className="w-full bg-slate-950 border border-slate-800 rounded-3xl py-6 px-8 text-2xl font-mono text-white placeholder-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              />
-            </div>
+          <form onSubmit={handleConnect} className="mt-auto space-y-4">
+            <input 
+              type="text" 
+              value={remoteId}
+              onChange={(e) => setRemoteId(e.target.value)}
+              placeholder="Digite o ID remoto..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 px-6 text-xl font-mono text-white placeholder-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
             <button 
               type="submit"
               disabled={remoteId.length < 6}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             >
               Conectar
-              <ArrowRight size={24} />
+              <ArrowRight size={20} />
             </button>
           </form>
         </div>
 
       </div>
 
-      {/* Seção Inferior: Ações Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Atalhos rápidos */}
+      <div className="w-full max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
         {[
-          { icon: <History size={20} />, label: 'Recentes', sub: 'Últimas conexões' },
-          { icon: <Shield size={20} />, label: 'Segurança', sub: 'Logs e acessos' },
-          { icon: <Download size={20} />, label: 'Instaladores', sub: 'Baixar app cliente' },
+          { icon: <History size={18} />, label: 'Recentes' },
+          { icon: <Shield size={18} />, label: 'Seguro' },
+          { icon: <Download size={18} />, label: 'Instalar' },
+          { icon: <Monitor size={18} />, label: 'Monitor' },
         ].map((item, i) => (
-          <div key={i} className="bg-slate-900/50 border border-slate-800 p-6 rounded-[32px] flex items-center gap-4 hover:bg-slate-800/50 transition-all cursor-pointer group">
-            <div className="p-3 bg-slate-800 rounded-2xl text-slate-500 group-hover:text-blue-400 transition-colors">
-              {item.icon}
-            </div>
-            <div>
-              <p className="font-bold text-white text-sm">{item.label}</p>
-              <p className="text-xs text-slate-500">{item.sub}</p>
-            </div>
+          <div key={i} className="bg-slate-900/40 border border-slate-800/60 p-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-colors cursor-pointer group">
+            <span className="text-slate-500 group-hover:text-blue-400 transition-colors">{item.icon}</span>
+            <span className="text-sm font-medium text-slate-400 group-hover:text-white">{item.label}</span>
           </div>
         ))}
       </div>
