@@ -13,7 +13,7 @@ import {
   Activity,
   Wifi
 } from 'lucide-react';
-import ChatBox from '../components/ChatBox';
+import ChatBox from '../components/ChatBox.tsx';
 
 const RemoteSession: React.FC = () => {
   const { id } = useParams();
@@ -54,13 +54,13 @@ const RemoteSession: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col gap-4 animate-in slide-in-from-bottom-8 duration-700 relative">
+    <div className="h-full w-full flex flex-col gap-4 animate-in slide-in-from-bottom-8 duration-700 relative">
       
       {/* Container Principal da Tela */}
-      <div className="flex-1 bg-black rounded-[40px] border border-slate-900 relative overflow-hidden shadow-2xl group">
+      <div className="flex-1 bg-black rounded-[40px] border border-slate-900 relative overflow-hidden shadow-2xl group flex items-center justify-center">
         
         {!isScreenSharing ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
+          <div className="flex flex-col items-center justify-center text-center p-12">
             <div className="w-32 h-32 bg-slate-900 rounded-[48px] flex items-center justify-center mb-8 shadow-2xl border border-slate-800 group-hover:scale-105 transition-transform duration-500">
               <Share2 className="text-blue-500" size={56} />
             </div>
@@ -78,7 +78,7 @@ const RemoteSession: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="w-full h-full relative">
+          <div className="w-full h-full relative flex items-center justify-center">
             <video 
               ref={videoRef} 
               autoPlay 
@@ -95,7 +95,7 @@ const RemoteSession: React.FC = () => {
           </div>
         )}
 
-        {/* Toolbar Flutuante Estilo Google Remote */}
+        {/* Toolbar Flutuante */}
         {isScreenSharing && (
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-40">
             <div className="bg-slate-950/80 backdrop-blur-2xl border border-slate-800 px-8 py-4 rounded-[32px] flex items-center gap-8 shadow-2xl">
@@ -140,7 +140,7 @@ const RemoteSession: React.FC = () => {
         )}
       </div>
 
-      {/* Janela de Chat Flutuante */}
+      {/* Chat Flutuante */}
       {showChat && (
         <div className="absolute right-12 bottom-32 w-80 h-96 z-50 animate-in slide-in-from-right-8 duration-300">
           <ChatBox />
