@@ -15,7 +15,7 @@ const RemoteSession: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Efeito para vincular o stream ao elemento de vídeo assim que ele for montado
+  // Sincroniza o stream com o elemento de vídeo de forma resiliente
   useEffect(() => {
     if (active && videoRef.current && streamRef.current) {
       const video = videoRef.current;
@@ -24,15 +24,12 @@ const RemoteSession: React.FC = () => {
       const playVideo = async () => {
         try {
           await video.play();
-          console.log("Stream iniciado com sucesso.");
         } catch (e) {
-          console.warn("Autoplay bloqueado. Tentando novamente após interação.", e);
+          console.warn("Autoplay bloqueado pelo navegador. O vídeo iniciará após interação ou mutado.");
         }
       };
 
-      // Tenta dar play assim que os metadados carregarem
       video.onloadedmetadata = playVideo;
-      // Chamada imediata caso o evento já tenha disparado
       playVideo();
     }
   }, [active]);
@@ -40,11 +37,11 @@ const RemoteSession: React.FC = () => {
   const startSession = async () => {
     try {
       setError(null);
-      // Solicita a captura de tela (Display Media)
+      // Solicita a captura de tela com configurações otimizadas
       const stream = await navigator.mediaDevices.getDisplayMedia({ 
         video: { 
           cursor: "always",
-          frameRate: { ideal: 30, max: 60 }
+          frameRate: { ideal: 30 }
         } as any,
         audio: true 
       });
@@ -52,13 +49,13 @@ const RemoteSession: React.FC = () => {
       streamRef.current = stream;
       setActive(true);
 
-      // Listener para o encerramento manual via navegador
+      // Detecta quando o compartilhamento é interrompido externamente
       stream.getVideoTracks()[0].onended = () => {
         endSession();
       };
     } catch (err: any) {
-      console.error("Erro ao capturar tela:", err);
-      setError("Permissão negada. Você precisa autorizar o compartilhamento da tela para simular o acesso remoto.");
+      console.error("Erro na captura de tela:", err);
+      setError("Permissão negada. É necessário autorizar o compartilhamento de tela para que o suporte remoto funcione.");
     }
   };
 
@@ -89,14 +86,14 @@ const RemoteSession: React.FC = () => {
   return (
     <div className="h-full w-full bg-slate-950 flex flex-col overflow-hidden">
       {!active ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 animate-in fade-in zoom-in duration-500">
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
           <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center mb-8 shadow-2xl shadow-blue-600/30">
             <Wifi className="text-white" size={40} />
           </div>
           
-          <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Portal de Suporte: {id}</h2>
+          <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Portal de Conexão: {id}</h2>
           <p className="text-slate-500 mb-12 max-w-sm text-lg">
-            Clique no botão abaixo e escolha a tela que deseja compartilhar com o técnico.
+            Você está prestes a iniciar uma transmissão segura. Clique no botão abaixo para autorizar o técnico.
           </p>
 
           {error && (
@@ -111,7 +108,7 @@ const RemoteSession: React.FC = () => {
               onClick={startSession}
               className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
             >
-              Iniciar Transmissão
+              Liberar Acesso
             </button>
             <button 
               onClick={() => navigate('/')}
@@ -123,12 +120,12 @@ const RemoteSession: React.FC = () => {
           
           <div className="mt-16 flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-widest">
             <ShieldCheck size={14} />
-            Sessão Criptografada SSL/AES
+            Identidade de Sessão Verificada
           </div>
         </div>
       ) : (
-        <div className="relative flex-1 bg-black overflow-hidden flex items-center justify-center">
-          {/* O vídeo deve estar mutado e com playsInline para garantir o autoplay e evitar tela preta */}
+        <div className="relative flex-1 bg-black overflow-hidden flex items-center justify-center animate-in fade-in duration-1000">
+          {/* Muted e playsInline garantem que o vídeo apareça sem ser bloqueado pelo navegador */}
           <video 
             ref={videoRef} 
             autoPlay 
@@ -137,23 +134,23 @@ const RemoteSession: React.FC = () => {
             className="w-full h-full object-contain pointer-events-none"
           />
           
-          {/* Overlay Superior de Status */}
-          <div className="absolute top-6 left-6 flex items-center gap-4">
+          {/* HUD de Status */}
+          <div className="absolute top-6 left-6 right-6 flex items-center justify-between pointer-events-none">
             <div className="bg-red-600/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-3 border border-red-500 shadow-2xl">
               <div className="w-2 h-2 rounded-full bg-white status-pulse"></div>
-              <span className="text-[11px] font-black text-white uppercase tracking-widest">TRANSMISSÃO AO VIVO • {id}</span>
+              <span className="text-[11px] font-black text-white uppercase tracking-widest">EM ATENDIMENTO • {id}</span>
             </div>
           </div>
 
-          {/* Barra de Ferramentas Inferior */}
+          {/* Ferramentas do Técnico */}
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-fit">
-            <div className="bg-slate-950/80 backdrop-blur-2xl border border-white/5 px-6 py-3 rounded-3xl flex items-center gap-4 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)]">
+            <div className="bg-slate-950/80 backdrop-blur-2xl border border-white/5 px-6 py-3 rounded-3xl flex items-center gap-4 shadow-2xl">
               <div className="flex items-center gap-1">
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Controle do Mouse" /><MousePointer2 size={22} />
+                  <Tooltip text="Controle Remoto" /><MousePointer2 size={22} />
                 </button>
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Sincronizar Teclado" /><Keyboard size={22} />
+                  <Tooltip text="Enviar Comandos" /><Keyboard size={22} />
                 </button>
               </div>
 
@@ -161,17 +158,17 @@ const RemoteSession: React.FC = () => {
 
               <div className="flex items-center gap-1">
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Enviar Arquivo" /><Files size={22} />
+                  <Tooltip text="Transferir Arquivo" /><Files size={22} />
                 </button>
                 <button 
                   onClick={() => setIsMuted(!isMuted)}
                   className={`relative group p-3 rounded-2xl transition-all ${isMuted ? 'text-red-400 bg-red-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                 >
-                  <Tooltip text={isMuted ? "Ouvir Áudio" : "Mutar Áudio"} />
+                  <Tooltip text={isMuted ? "Ouvir Remoto" : "Silenciar"} />
                   {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
                 </button>
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Abrir Chat" /><MessageSquare size={22} />
+                  <Tooltip text="Mensagem de Texto" /><MessageSquare size={22} />
                 </button>
               </div>
 
@@ -179,10 +176,10 @@ const RemoteSession: React.FC = () => {
 
               <div className="flex items-center gap-1">
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Ajustar Qualidade" /><Settings2 size={22} />
+                  <Tooltip text="Configurações de Fluxo" /><Settings2 size={22} />
                 </button>
                 <button className="relative group p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
-                  <Tooltip text="Tela Cheia" /><Maximize2 size={22} />
+                  <Tooltip text="Maximizar" /><Maximize2 size={22} />
                 </button>
               </div>
 
@@ -192,7 +189,7 @@ const RemoteSession: React.FC = () => {
                 onClick={endSession}
                 className="bg-red-600 hover:bg-red-500 text-white p-3.5 rounded-2xl shadow-lg transition-all active:scale-90"
               >
-                <Tooltip text="Fechar Conexão" />
+                <Tooltip text="Desconectar" />
                 <Square size={20} fill="currentColor" />
               </button>
             </div>
